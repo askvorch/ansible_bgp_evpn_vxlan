@@ -7,7 +7,7 @@
 ASA Version 9.8(4)15 
 !
 hostname ASA
-enable password $sha512$5000$/lc1s07xcuEpJl2PL3yucg==$xCMa/JnVczfhym0CMBpnvw== pbkdf2
+enable password $sha512$*** pbkdf2
 names
 no mac-address auto
 
@@ -214,8 +214,8 @@ threat-detection basic-threat
 threat-detection statistics access-list
 no threat-detection statistics tcp-intercept
 dynamic-access-policy-record DfltAccessPolicy
-username admin password $sha512$5000$9NEku5zU9qSsrD+mFrTRCQ==$zLqh7U578/bKKf7r2OXcuw== pbkdf2 privilege 15
-username ansible password $sha512$5000$8/FCTA5RagLXQ9d9d2ajxg==$KtWsvfsQXTXEYv+qEgR6Vw== pbkdf2 privilege 15
+username admin password $sha512$*** pbkdf2 privilege 15
+username ansible password $sha512$*** pbkdf2 privilege 15
 !
 class-map inspection_default
  match default-inspection-traffic

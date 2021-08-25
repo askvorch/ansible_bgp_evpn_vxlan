@@ -24,8 +24,8 @@ clock timezone EET 3 0
 feature nv overlay
 
 no password strength-check
-username admin password 5 $5$X5dBl07T$Ca6bgCQb3YKFAZcf93nlEnpoVr3z25lJqefYOklykh/  role network-admin
-username ansible password 5 $5$tqbeRpnt$11QeUB0RdhfiNaHOKY7ncCHMhiPdQxW/mM3RD/u4Au/  role network-admin
+username admin password 5 ***  role network-admin
+username ansible password 5 ***  role network-admin
 ssh login-attempts 10
 
 ssh key rsa 2048 

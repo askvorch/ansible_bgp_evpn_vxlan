@@ -171,8 +171,8 @@ memory free low-watermark processor 72329
 !
 spanning-tree extend system-id
 !
-username ansible privilege 15 secret 9 $9$qyYY0GDpaUN/3k$ueHfm/cV328hidXNc1itO4EiA02EQvJ.MtBzzqGUPWs
-username admin privilege 15 secret 9 $9$zIWDkmoxFuBJX.$0p4p2ABQOD9RgKK0nd7H/aQRr0EN7HUK4QPfVkk6z2Y
+username ansible privilege 15 secret 9 ***
+username admin privilege 15 secret 9 ***
 !
 redundancy
 !
