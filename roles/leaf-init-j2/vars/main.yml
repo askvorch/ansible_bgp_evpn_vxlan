@@ -1,0 +1,22 @@
+---
+# vars file for leaf-init-j2
+
+nxos_provider:
+  username: "{{ ansible_user }}"
+  password: "{{ ansible_password }}"
+  transport: nxapi
+  use_ssl: no
+  validate_certs: no
+  timeout: 100
+  host: "{{ ansible_host }}"
+ntp_server: 172.16.100.100
+asn: 65000
+update_source: loopback0
+bgp_rrs:
+  - 192.168.100.1
+  - 192.168.100.2
+anycast_rp: 192.168.99.1
+anycast_rp_ip:
+  - 192.168.101.1
+  - 192.168.101.2
+...

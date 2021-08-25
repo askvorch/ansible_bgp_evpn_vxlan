@@ -1,0 +1,112 @@
+---
+include: cicd_jobs_cfg.yml
+
+stages:
+  - lint
+  - pre_check
+  - backup
+  - deploy
+  - post_check
+
+yaml_lint:
+  stage: lint
+  tags:
+    - verify
+  script:
+    - yamllint *.yml ./host_vars/*.yml ./group_vars/*.yml
+
+ansible_lint:
+  stage: lint
+  tags:
+    - verify
+  script:
+    - ansible-lint add_new_leaf.yml
+    - ansible-lint add_new_spine.yml
+    - ansible-lint asa_ogs_cfg.yml
+    - ansible-lint backup_cfgs.yml
+    - ansible-lint bgp_evpn_vxlan_configure.yml
+    - ansible-lint check_reachability.yml
+    - ansible-lint clear_bev_config.yml
+    - ansible-lint --exclude roles leaf_init.yml
+    - ansible-lint --exclude roles spine_init.yml
+
+ansible_syntax_check:
+  stage: lint
+  tags:
+    - verify
+  script:
+    - ansible-playbook --syntax-check add_new_leaf.yml
+    - ansible-playbook --syntax-check add_new_spine.yml
+    - ansible-playbook --syntax-check asa_ogs_cfg.yml
+    - ansible-playbook --syntax-check backup_cfgs.yml
+    - ansible-playbook --syntax-check bgp_evpn_vxlan_configure.yml
+    - ansible-playbook --syntax-check check_reachability.yml
+    - ansible-playbook --syntax-check clear_bev_config.yml
+    - ansible-playbook --syntax-check leaf_init.yml
+    - ansible-playbook --syntax-check spine_init.yml    
+
+check_reachability:
+  stage: pre_check
+  tags:
+    - verify
+  script:
+    - ansible-playbook --vault-password-file /home/vorch/ansible_vault.pwd check_reachability.yml
+
+backup_config:
+  stage: backup
+  tags:
+    - backup
+  script:
+    - ansible-playbook --vault-password-file /home/vorch/ansible_vault.pwd backup_cfgs.yml
+
+deploy_new_vrf_config:
+  stage: deploy
+  tags:
+    - deploy
+  script:
+    - ansible-playbook --vault-password-file /home/vorch/ansible_vault.pwd bgp_evpn_vxlan_configure.yml --tags "vrf_cfg"
+  rules:
+    - if: '$VRF_CFG == null || $VRF_CFG == "1"'
+  
+deploy_new_svc_config:
+  stage: deploy
+  tags:
+    - deploy  
+  script:
+    - ansible-playbook --vault-password-file /home/vorch/ansible_vault.pwd bgp_evpn_vxlan_configure.yml --tags "svc_cfg"
+  rules:
+    - if: '$SVC_CFG == null || $SVC_CFG == "1"'
+
+deploy_new_acc_config:
+  stage: deploy
+  tags:
+    - deploy
+  script:
+    - ansible-playbook --vault-password-file /home/vorch/ansible_vault.pwd bgp_evpn_vxlan_configure.yml --tags "acc_cfg"
+  rules:
+    - if: '$ACC_CFG == null || $ACC_CFG == "1"'
+
+deploy_new_asa_config:
+  stage: deploy
+  tags:
+    - deploy
+  script:
+    - ansible-playbook --vault-password-file /home/vorch/ansible_vault.pwd asa_ogs_cfg.yml
+  rules:
+    - if: '$ASA_CFG == null || $ASA_CFG == "1"'
+
+clear_config:
+  stage: deploy
+  tags:
+    - deploy
+  script:
+    - ansible-playbook --vault-password-file /home/vorch/ansible_vault.pwd clear_bev_config.yml
+
+check_results:
+  stage: post_check
+  tags:
+    - verify
+  script:
+    - ansible-playbook --vault-password-file /home/vorch/ansible_vault.pwd  verify_config.yml
+
+...

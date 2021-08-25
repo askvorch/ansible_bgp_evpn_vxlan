@@ -1,0 +1,525 @@
+!Command: show running-config
+!Running configuration last done at: Wed Aug 25 16:50:35 2021
+!Time: Wed Aug 25 19:17:11 2021
+
+version 7.0(3)I7(7) Bios:version  
+switchname Leaf-2
+vdc Leaf-2 id 1
+  limit-resource vlan minimum 16 maximum 4094
+  limit-resource vrf minimum 2 maximum 4096
+  limit-resource port-channel minimum 0 maximum 511
+  limit-resource u4route-mem minimum 128 maximum 128
+  limit-resource u6route-mem minimum 96 maximum 96
+  limit-resource m4route-mem minimum 58 maximum 58
+  limit-resource m6route-mem minimum 8 maximum 8
+
+feature nxapi
+nv overlay evpn
+feature ospf
+feature bgp
+feature pim
+feature fabric forwarding
+feature interface-vlan
+feature vn-segment-vlan-based
+clock timezone EET 3 0
+feature nv overlay
+
+no password strength-check
+username admin password 5 $5$aQfKQYoy$PPMNA4Y/uYbsQLKD.ZVPryzYNL528SFjzc1xcyoDVt4  role network-admin
+username ansible password 5 $5$ADdKyznw$knP8/LcB.l.HvwmVwq5A4khMkySqbKYcuzU1E8io924  role network-admin
+ssh login-attempts 10
+
+ssh key rsa 2048 
+no ip domain-lookup
+ip access-list aclUsers
+  5 remark Basic users traffic filtering
+  10 permit ip any 10.110.0.0 0.0.255.255 
+  20 permit ip any 10.1.0.0 0.0.0.255 
+  30 deny ip any 10.1.0.0 0.0.255.255 
+  35 deny icmp any 10.1.0.0 0.0.255.255 
+  40 permit ip any any 
+copp profile strict
+snmp-server user admin network-admin auth md5 0x88776e24a6b564a72c4edddbfa0db4ea priv 0x88776e24a6b564a72c4edddbfa0db4ea localizedkey
+snmp-server user ansible network-admin auth md5 0xe584d900370dbb8c01e43960190fb6d9 priv 0xe584d900370dbb8c01e43960190fb6d9 localizedkey
+rmon event 1 description FATAL(1) owner PMON@FATAL
+rmon event 2 description CRITICAL(2) owner PMON@CRITICAL
+rmon event 3 description ERROR(3) owner PMON@ERROR
+rmon event 4 description WARNING(4) owner PMON@WARNING
+rmon event 5 description INFORMATION(5) owner PMON@INFO
+ntp server 172.16.100.100 prefer use-vrf management
+ntp source-interface  mgmt0
+
+fabric forwarding anycast-gateway-mac 0000.1122.3344
+ip pim rp-address 192.168.99.1 group-list 224.0.0.0/4
+ip pim ssm range 232.0.0.0/8
+vlan 1,200-202,300-301,500-501,901-902
+vlan 200
+  name L2-VNI-T1-Users
+  vn-segment 50200
+vlan 201
+  name L2-VNI-T1-UserA
+  vn-segment 50201
+vlan 202
+  name L2-VNI-T1-UserB
+  vn-segment 50202
+vlan 300
+  name L2-VNI-T2-IoT
+  vn-segment 50300
+vlan 301
+  name L2-VNI-T2-IoT-A
+  vn-segment 50301
+vlan 500
+  name L2-VNI-Internet
+  vn-segment 50500
+vlan 501
+  name L2-VNI-Service1
+  vn-segment 50501
+vlan 901
+  name L3-VNI-T1
+  vn-segment 50901
+vlan 902
+  name L3-VNI-T2
+  vn-segment 50902
+
+vrf context T1-Users
+  vni 50901
+  rd auto
+  address-family ipv4 unicast
+    route-target both auto
+    route-target both auto evpn
+vrf context T2-IoT
+  vni 50902
+  rd auto
+  address-family ipv4 unicast
+    route-target both auto
+    route-target both auto evpn
+vrf context management
+hardware access-list tcam region racl 512
+hardware access-list tcam region e-racl 512
+hardware access-list tcam region vpc-convergence 0
+hardware access-list tcam region rp-ipv6-qos 0
+hardware access-list tcam region ifacl 256
+hardware access-list tcam region arp-ether 256 double-wide
+
+nxapi http port 80
+nxapi use-vrf management
+
+
+interface Vlan1
+
+interface Vlan200
+  no shutdown
+  vrf member T1-Users
+  no ip redirects
+  ip address 10.1.0.1/24
+  fabric forwarding mode anycast-gateway
+
+interface Vlan201
+  no shutdown
+  ip access-group aclUsers in
+  vrf member T1-Users
+  no ip redirects
+  ip address 10.1.1.1/24
+  fabric forwarding mode anycast-gateway
+
+interface Vlan202
+  no shutdown
+  ip access-group aclUsers in
+  vrf member T1-Users
+  no ip redirects
+  ip address 10.1.2.1/24
+  fabric forwarding mode anycast-gateway
+
+interface Vlan300
+  no shutdown
+  vrf member T2-IoT
+  no ip redirects
+  ip address 10.2.0.1/24
+  fabric forwarding mode anycast-gateway
+
+interface Vlan301
+  no shutdown
+  vrf member T2-IoT
+  no ip redirects
+  ip address 10.2.1.1/24
+  fabric forwarding mode anycast-gateway
+
+interface Vlan901
+  no shutdown
+  vrf member T1-Users
+  no ip redirects
+  ip forward
+
+interface Vlan902
+  no shutdown
+  vrf member T2-IoT
+  no ip redirects
+  ip forward
+
+interface nve1
+  no shutdown
+  host-reachability protocol bgp
+  source-interface loopback1
+  member vni 50200
+    suppress-arp
+    mcast-group 239.1.0.0
+  member vni 50201
+    suppress-arp
+    mcast-group 239.1.0.1
+  member vni 50202
+    suppress-arp
+    mcast-group 239.1.0.2
+  member vni 50300
+    suppress-arp
+    mcast-group 239.2.0.0
+  member vni 50301
+    suppress-arp
+    mcast-group 239.2.0.1
+  member vni 50500
+    suppress-arp
+    mcast-group 239.5.0.0
+  member vni 50501
+    suppress-arp
+    mcast-group 239.5.0.1
+  member vni 50901 associate-vrf
+  member vni 50902 associate-vrf
+
+interface Ethernet1/1
+  no switchport
+  ip address 10.255.12.12/24
+  ip ospf network point-to-point
+  ip router ospf 1 area 0.0.0.0
+  ip pim sparse-mode
+  no shutdown
+
+interface Ethernet1/2
+  no switchport
+  ip address 10.255.22.12/24
+  ip ospf network point-to-point
+  ip router ospf 1 area 0.0.0.0
+  ip pim sparse-mode
+  no shutdown
+
+interface Ethernet1/3
+  switchport access vlan 201
+
+interface Ethernet1/4
+  switchport access vlan 202
+
+interface Ethernet1/5
+  switchport access vlan 301
+
+interface Ethernet1/6
+
+interface Ethernet1/7
+
+interface Ethernet1/8
+
+interface Ethernet1/9
+
+interface Ethernet1/10
+
+interface Ethernet1/11
+
+interface Ethernet1/12
+
+interface Ethernet1/13
+
+interface Ethernet1/14
+
+interface Ethernet1/15
+
+interface Ethernet1/16
+
+interface Ethernet1/17
+
+interface Ethernet1/18
+
+interface Ethernet1/19
+
+interface Ethernet1/20
+
+interface Ethernet1/21
+
+interface Ethernet1/22
+
+interface Ethernet1/23
+
+interface Ethernet1/24
+
+interface Ethernet1/25
+
+interface Ethernet1/26
+
+interface Ethernet1/27
+
+interface Ethernet1/28
+
+interface Ethernet1/29
+
+interface Ethernet1/30
+
+interface Ethernet1/31
+
+interface Ethernet1/32
+
+interface Ethernet1/33
+
+interface Ethernet1/34
+
+interface Ethernet1/35
+
+interface Ethernet1/36
+
+interface Ethernet1/37
+
+interface Ethernet1/38
+
+interface Ethernet1/39
+
+interface Ethernet1/40
+
+interface Ethernet1/41
+
+interface Ethernet1/42
+
+interface Ethernet1/43
+
+interface Ethernet1/44
+
+interface Ethernet1/45
+
+interface Ethernet1/46
+
+interface Ethernet1/47
+
+interface Ethernet1/48
+
+interface Ethernet1/49
+
+interface Ethernet1/50
+
+interface Ethernet1/51
+
+interface Ethernet1/52
+
+interface Ethernet1/53
+
+interface Ethernet1/54
+
+interface Ethernet1/55
+
+interface Ethernet1/56
+
+interface Ethernet1/57
+
+interface Ethernet1/58
+
+interface Ethernet1/59
+
+interface Ethernet1/60
+
+interface Ethernet1/61
+
+interface Ethernet1/62
+
+interface Ethernet1/63
+
+interface Ethernet1/64
+
+interface Ethernet1/65
+
+interface Ethernet1/66
+
+interface Ethernet1/67
+
+interface Ethernet1/68
+
+interface Ethernet1/69
+
+interface Ethernet1/70
+
+interface Ethernet1/71
+
+interface Ethernet1/72
+
+interface Ethernet1/73
+
+interface Ethernet1/74
+
+interface Ethernet1/75
+
+interface Ethernet1/76
+
+interface Ethernet1/77
+
+interface Ethernet1/78
+
+interface Ethernet1/79
+
+interface Ethernet1/80
+
+interface Ethernet1/81
+
+interface Ethernet1/82
+
+interface Ethernet1/83
+
+interface Ethernet1/84
+
+interface Ethernet1/85
+
+interface Ethernet1/86
+
+interface Ethernet1/87
+
+interface Ethernet1/88
+
+interface Ethernet1/89
+
+interface Ethernet1/90
+
+interface Ethernet1/91
+
+interface Ethernet1/92
+
+interface Ethernet1/93
+
+interface Ethernet1/94
+
+interface Ethernet1/95
+
+interface Ethernet1/96
+
+interface Ethernet1/97
+
+interface Ethernet1/98
+
+interface Ethernet1/99
+
+interface Ethernet1/100
+
+interface Ethernet1/101
+
+interface Ethernet1/102
+
+interface Ethernet1/103
+
+interface Ethernet1/104
+
+interface Ethernet1/105
+
+interface Ethernet1/106
+
+interface Ethernet1/107
+
+interface Ethernet1/108
+
+interface Ethernet1/109
+
+interface Ethernet1/110
+
+interface Ethernet1/111
+
+interface Ethernet1/112
+
+interface Ethernet1/113
+
+interface Ethernet1/114
+
+interface Ethernet1/115
+
+interface Ethernet1/116
+
+interface Ethernet1/117
+
+interface Ethernet1/118
+
+interface Ethernet1/119
+
+interface Ethernet1/120
+
+interface Ethernet1/121
+
+interface Ethernet1/122
+
+interface Ethernet1/123
+
+interface Ethernet1/124
+
+interface Ethernet1/125
+
+interface Ethernet1/126
+
+interface Ethernet1/127
+
+interface Ethernet1/128
+
+interface mgmt0
+  vrf member management
+  ip address 172.16.100.12/24
+
+interface loopback0
+  ip address 192.168.100.12/32
+  ip router ospf 1 area 0.0.0.0
+
+interface loopback1
+  ip address 192.168.101.12/32
+  ip router ospf 1 area 0.0.0.0
+line console
+line vty
+boot nxos bootflash:/nxos.7.0.3.I7.7.bin 
+router ospf 1
+  router-id 172.16.100.12
+router bgp 65000
+  router-id 172.16.100.12
+  address-family l2vpn evpn
+  template peer RR-S
+    update-source loopback0
+    address-family ipv4 unicast
+      send-community
+      send-community extended
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+  neighbor 192.168.100.1
+    inherit peer RR-S
+    remote-as 65000
+  neighbor 192.168.100.2
+    inherit peer RR-S
+    remote-as 65000
+  vrf T1-Users
+    address-family ipv4 unicast
+      advertise l2vpn evpn
+  vrf T2-IoT
+    address-family ipv4 unicast
+      advertise l2vpn evpn
+evpn
+  vni 50200 l2
+    rd auto
+    route-target import auto
+    route-target export auto
+  vni 50201 l2
+    rd auto
+    route-target import auto
+    route-target export auto
+  vni 50202 l2
+    rd auto
+    route-target import auto
+    route-target export auto
+  vni 50300 l2
+    rd auto
+    route-target import auto
+    route-target export auto
+  vni 50301 l2
+    rd auto
+    route-target import auto
+    route-target export auto
+  vni 50500 l2
+    rd auto
+    route-target import auto
+    route-target export auto
+  vni 50501 l2
+    rd auto
+    route-target import auto
+    route-target export auto

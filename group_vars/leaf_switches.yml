@@ -1,0 +1,105 @@
+---
+vlans_vnis:
+  - name: default
+    vlan_id: 1
+    mapped_vni: null
+  - name: L2-VNI-T1-Users
+    vlan_id: 200
+    mapped_vni: 50200
+  - name: L2-VNI-T1-UserA
+    vlan_id: 201
+    mapped_vni: 50201
+  - name: L2-VNI-T1-UserB
+    vlan_id: 202
+    mapped_vni: 50202
+  - name: L2-VNI-T2-IoT
+    vlan_id: 300
+    mapped_vni: 50300
+  - name: L2-VNI-T2-IoT-A
+    vlan_id: 301
+    mapped_vni: 50301
+  - name: L2-VNI-Internet
+    vlan_id: 500
+    mapped_vni: 50500
+  - name: L2-VNI-Service1
+    vlan_id: 501
+    mapped_vni: 50501
+  - name: L3-VNI-T1
+    vlan_id: 901
+    mapped_vni: 50901
+  - name: L3-VNI-T2
+    vlan_id: 902
+    mapped_vni: 50902
+
+vrfs:
+  - name: T1-Users
+    vni: 50901
+    rd: auto
+  - name: T2-IoT
+    vni: 50902
+    rd: auto
+
+l2_vnis:
+  - name: L2-VNI-T1-Users
+    vni: 50200
+    mcast_group: 239.1.0.0
+  - name: L2-VNI-T1-UserA
+    vni: 50201
+    mcast_group: 239.1.0.1
+  - name: L2-VNI-T1-UserB
+    vni: 50202
+    mcast_group: 239.1.0.2
+  - name: L2-VNI-T2-IoT
+    vni: 50300
+    mcast_group: 239.2.0.0
+  - name: L2-VNI-T2-IoT-A
+    vni: 50301
+    mcast_group: 239.2.0.1
+  - name: L2-VNI-Internet
+    vni: 50500
+    mcast_group: 239.5.0.0
+  - name: L2-VNI-Service1
+    vni: 50501
+    mcast_group: 239.5.0.1
+
+l3_vnis:
+  - name: L3-VNI-T1
+    vlan_id: 901
+    vni: 50901
+    vrf: T1-Users
+  - name: L3-VNI-T2
+    vlan_id: 902
+    vni: 50902
+    vrf: T2-IoT
+
+evpn_svi:
+  - name: Vlan200
+    vrf: T1-Users
+    address: 10.1.0.1/24
+    acg_in: null
+  - name: Vlan201
+    vrf: T1-Users
+    address: 10.1.1.1/24
+    acg_in: aclUsers
+  - name: Vlan202
+    vrf: T1-Users
+    address: 10.1.2.1/24
+    acg_in: aclUsers
+  - name: Vlan300
+    vrf: T2-IoT
+    address: 10.2.0.1/24
+    acg_in: null
+  - name: Vlan301
+    vrf: T2-IoT
+    address: 10.2.1.1/24
+    acg_in: null
+  - name: Vlan901
+    vrf: T1-Users
+    address: null
+    acg_in: null
+  - name: Vlan902
+    vrf: T2-IoT
+    address: null
+    acg_in: null
+
+...

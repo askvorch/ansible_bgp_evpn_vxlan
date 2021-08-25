@@ -1,0 +1,21 @@
+---
+- name: Add new leaf switch to spines
+  hosts: spine_switches
+  vars:
+    new_leaf_ip: 192.168.100.12
+
+  tasks:
+    - name: Add BGP neighbor as RR-C
+      cisco.nxos.nxos_bgp_global:
+        config:
+          as_number: "{{ asn }}"
+          neighbors:
+            - neighbor_address: "{{ new_leaf_ip }}"
+              remote_as: "{{ asn }}"
+              inherit:
+                peer: "RR-C"
+
+    - name: Save spine config
+      cisco.nxos.nxos_config:
+        save_when: always
+...

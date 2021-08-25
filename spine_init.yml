@@ -1,0 +1,7 @@
+---
+- hosts: spine_init
+  connection: local
+  roles:
+    - spine-init-j2
+
+...

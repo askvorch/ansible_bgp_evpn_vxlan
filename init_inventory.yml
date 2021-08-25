@@ -1,0 +1,10 @@
+---
+all:
+  children:
+    spine_init:
+      hosts:
+        Spine-2:
+    leaf_init:
+      hosts:
+        Leaf-2:
+...

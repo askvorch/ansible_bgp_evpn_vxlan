@@ -1,0 +1,7 @@
+---
+- hosts: leaf_init
+  connection: local
+  roles:
+    - leaf-init-j2
+
+...

@@ -1,0 +1,14 @@
+---
+# Set Ansible tasks to run
+# 1 - Yes (Run), 2 - No (Don't run)
+
+variables:
+  # Configure new VRF for new isolated service
+  VRF_CFG: 1
+  # Configure new service
+  SVC_CFG: 1
+  # Configure access ports on leaf switches to connect new hosts to existed services
+  ACC_CFG: 1
+  # Change Object Groups settings on ASA firewall
+  ASA_CFG: 1
+...

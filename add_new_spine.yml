@@ -1,0 +1,46 @@
+---
+- name: Add new spine switch to spines
+  hosts: spine_switches
+  vars:
+    new_spine_ip: 192.168.100.2
+
+  tasks:
+    - name: Add BGP neighbor as RR-S
+      cisco.nxos.nxos_bgp_global:
+        config:
+          as_number: "{{ asn }}"
+          neighbors:
+            - neighbor_address: "{{ new_spine_ip }}"
+              remote_as: "{{ asn }}"
+              inherit:
+                peer: "RR-S"
+      when: loopback_interfaces[0]['ipv4'][0]['address'] | ansible.netcommon.ipaddr('address') != new_spine_ip
+
+    - name: Save spine config
+      cisco.nxos.nxos_config:
+        save_when: always
+
+    - name: Show lo0 IP address
+      ansible.builtin.debug:
+        msg: "{{ loopback_interfaces[0]['ipv4'][0]['address'] | ansible.netcommon.ipaddr('address') }} {{ new_spine_ip }}"
+
+- name: Add new spine switch to leafs
+  hosts: leaf_switches
+  vars:
+    new_spine_ip: 192.168.100.2
+
+  tasks:
+    - name: Add BGP neighbor as RR-S
+      cisco.nxos.nxos_bgp_global:
+        config:
+          as_number: "{{ asn }}"
+          neighbors:
+            - neighbor_address: "{{ new_spine_ip }}"
+              remote_as: "{{ asn }}"
+              inherit:
+                peer: "RR-S"
+
+    - name: Save leaf config
+      cisco.nxos.nxos_config:
+        save_when: always
+...

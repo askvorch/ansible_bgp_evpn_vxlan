@@ -1,0 +1,62 @@
+---
+- name: Show BGP EVPN
+  hosts: fabric_switches
+  order: sorted
+
+  tasks:
+    - name: Show BGP L2VPN EVPN SUMMARY
+      cisco.nxos.nxos_command:
+        commands: show bgp l2vpn evpn summary | begin Neighbor
+      register: evpn_summary
+    - debug: var=evpn_summary.stdout_lines[0]
+
+- name: Show NVE VNI on leaf switches
+  hosts: leaf_switches
+  order: sorted
+
+  tasks:
+    - name: Show NVE VNI
+      cisco.nxos.nxos_command:
+        commands: show nve vni | begin Interface
+      register: nve_vni_summary
+    - debug: var=nve_vni_summary.stdout_lines[0]
+
+- name: Show IP ROUTES on L3-out routers
+  hosts: l3out_routers
+  order: sorted
+
+  tasks:
+    - name: Get VRF list
+      cisco.ios.ios_command:
+        commands: show ip vrf brief | include T[0-9]+-.+
+      register: vrf_list
+
+    - name: Parse VRF list
+      set_fact:
+        tenant_vrfs: "{{ vrf_list.stdout | map('regex_findall', '\\b(?:T[0-9]+-\\S+)') | list }}"
+
+    - name: Show IP ROUTES in deafult vrf
+      cisco.ios.ios_command:
+        commands: show ip route | begin Gateway
+      register: ip_route_default
+    - debug: var=ip_route_default.stdout_lines[0]
+
+    - name: Show IP ROUTES in tenant vrfs
+      cisco.ios.ios_command:
+        commands: show ip route vrf {{ item }} | begin Gateway
+      register: ip_route_tenant
+      loop: "{{ tenant_vrfs[0] }}"
+    - debug: var=ip_route_tenant
+
+- name: Show NETWORK OBJECT GROUPS on ASA firewalls
+  hosts: service_firewalls
+  order: sorted
+
+  tasks:
+    - name: Show NETWORK OBJECT GROUPS
+      cisco.asa.asa_command:
+        commands: show object-group network
+      register: og_list
+    - debug: var=og_list.stdout_lines[0]
+
+...

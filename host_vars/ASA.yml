@@ -1,0 +1,28 @@
+---
+ansible_host: 172.16.100.25
+
+network_object_groups:
+  - name: ogUsers
+    description: All users
+    network_object:
+      address:
+        - 10.1.0.0 255.255.255.0
+        - 10.1.1.0 255.255.255.0
+        - 10.1.2.0 255.255.255.0
+
+  - name: ogServers
+    description: All servers
+    network_object:
+      address:
+        - 10.101.0.0 255.255.0.0
+
+  - name: ogICMP-Service
+    description: Servers to provide ICMP service
+    network_object:
+      host:
+        - 10.101.1.11
+        - 10.101.1.12
+      address:
+        - 10.101.1.32 255.255.255.252
+
+...

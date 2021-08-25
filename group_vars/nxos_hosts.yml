@@ -1,0 +1,21 @@
+---
+ansible_connection: ansible.netcommon.httpapi
+ansible_network_os: cisco.nxos.nxos
+remote_user: ansible_user
+password: ansible_password
+use_ssl: no
+validate_certs: no
+# ansible_connection: ansible.netcommon.network_cli
+# ansible_network_os: cisco.nxos.nxos
+# ansible_become: yes
+# ansible_become_method: enable
+
+nxos_provider:
+  username: "{{ ansible_user }}"
+  password: "{{ ansible_password }}"
+  transport: nxapi
+  use_ssl: no
+  validate_certs: no
+  timeout: 100
+  host: "{{ ansible_host }}"
+...

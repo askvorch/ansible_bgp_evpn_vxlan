@@ -1,0 +1,75 @@
+switchname {{ inventory_hostname }}
+!
+nv overlay evpn
+feature ospf
+feature bgp
+feature pim
+feature interface-vlan
+feature vn-segment-vlan-based
+clock timezone EET 3 0
+feature nv overlay
+!
+no ip domain-lookup
+no system default switchport
+!
+ntp server {{ ntp_server }} prefer use-vrf management
+ntp source-interface  mgmt0
+!
+ip pim rp-address {{ anycast_rp }} group-list 224.0.0.0/4
+{% for rp_ip in anycast_rp_ip %}
+ip pim anycast-rp {{ anycast_rp }} {{ rp_ip }}
+{% endfor %}
+!
+{% for interface in l3_interfaces %}
+interface {{ interface['name'] }}
+  ip address {{ interface['ipv4'][0]['address'] }}
+  ip ospf network point-to-point
+  ip router ospf 1 area 0.0.0.0
+  ip pim sparse-mode
+  no shutdown
+{% endfor %}
+!
+{% for interface in loopback_interfaces %}
+interface {{ interface['name'] }}
+  ip address {{ interface['ipv4'][0]['address'] }}
+  ip router ospf 1 area 0.0.0.0
+{% endfor %}
+!
+router ospf 1
+  router-id {{ router_id }}
+!
+router bgp {{ asn }}
+  router-id {{ router_id }}
+  address-family ipv4 unicast
+  address-family l2vpn evpn
+  template peer RR-C
+    update-source {{ update_source }}
+    address-family ipv4 unicast
+      send-community
+      send-community extended
+      route-reflector-client
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+      route-reflector-client
+  template peer RR-S
+    update-source {{ update_source }}
+    address-family ipv4 unicast
+      send-community
+      send-community extended
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+{% set own_bgp_ip = loopback_interfaces[0]['ipv4'][0]['address'] | ansible.netcommon.ipaddr('address') %}
+{% for rrs in bgp_rrs %}
+{% if rrs != own_bgp_ip %}
+  neighbor {{ rrs }}
+    inherit peer RR-S
+    remote-as {{ asn }}
+{% endif %}
+{% endfor %}
+{% for rrc in bgp_rrc %}  
+  neighbor {{ rrc }}
+    inherit peer RR-C
+    remote-as {{ asn }}
+{% endfor %}

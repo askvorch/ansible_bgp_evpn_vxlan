@@ -1,0 +1,37 @@
+{
+ "collection_info": {
+  "namespace": "ansible",
+  "name": "utils",
+  "version": "2.3.1",
+  "authors": [
+   "Ansible Community"
+  ],
+  "readme": "README.md",
+  "tags": [
+   "linux",
+   "networking",
+   "security",
+   "cloud",
+   "utilities",
+   "data",
+   "validation",
+   "utils"
+  ],
+  "description": "Ansible Collection with utilities to ease the management, manipulation, and validation of data within a playbook",
+  "license": [],
+  "license_file": "LICENSE",
+  "dependencies": {},
+  "repository": "https://github.com/ansible-collections/ansible.utils",
+  "documentation": null,
+  "homepage": null,
+  "issues": null
+ },
+ "file_manifest_file": {
+  "name": "FILES.json",
+  "ftype": "file",
+  "chksum_type": "sha256",
+  "chksum_sha256": "7f2b5afc36d4626d9bce8a3618471b161e30244daf07848327e8be4f8fa530a3",
+  "format": 1
+ },
+ "format": 1
+}

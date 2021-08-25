@@ -1,0 +1,321 @@
+Building configuration...
+
+Current configuration : 8050 bytes
+!
+! Last configuration change at 10:00:33 EET Wed Aug 25 2021
+!
+version 16.12
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service call-home
+platform qfp utilization monitor load 80
+platform punt-keepalive disable-kernel-core
+platform console serial
+!
+hostname L3-out
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+aaa new-model
+!
+!
+aaa authentication login default local-case
+aaa authorization exec default local 
+!
+!
+!
+!
+!
+aaa session-id common
+clock timezone EET 3 0
+call-home
+ ! If contact email address in call-home is configured as sch-smart-licensing@cisco.com
+ ! the email address configured in Cisco Smart License Portal will be used as contact email address to send SCH notifications.
+ contact-email-addr sch-smart-licensing@cisco.com
+ profile "CiscoTAC-1"
+  active
+  destination transport-method http
+  no destination transport-method email
+!
+ip vrf T1-Users
+ rd 65100:200
+ route-target export 65100:200
+ route-target import 65100:200
+!
+ip vrf T2-IoT
+ rd 65100:300
+ route-target export 65100:300
+ route-target import 65100:300
+!
+ip vrf management
+ rd 65001:100
+!
+!
+!
+!
+!
+!
+!
+ip domain name lab.local
+!
+!
+!
+login on-success log
+!
+!
+!
+!
+!
+!
+!
+subscriber templating
+! 
+! 
+! 
+! 
+!
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+crypto pki trustpoint TP-self-signed-3587001455
+ enrollment selfsigned
+ subject-name cn=IOS-Self-Signed-Certificate-3587001455
+ revocation-check none
+ rsakeypair TP-self-signed-3587001455
+!
+crypto pki trustpoint SLA-TrustPoint
+ enrollment pkcs12
+ revocation-check crl
+!
+!
+crypto pki certificate chain TP-self-signed-3587001455
+ certificate self-signed 01
+  30820330 30820218 A0030201 02020101 300D0609 2A864886 F70D0101 05050030 
+  31312F30 2D060355 04031326 494F532D 53656C66 2D536967 6E65642D 43657274 
+  69666963 6174652D 33353837 30303134 3535301E 170D3231 30383033 31313537 
+  32345A17 0D333030 31303130 30303030 305A3031 312F302D 06035504 03132649 
+  4F532D53 656C662D 5369676E 65642D43 65727469 66696361 74652D33 35383730 
+  30313435 35308201 22300D06 092A8648 86F70D01 01010500 0382010F 00308201 
+  0A028201 0100CCFC 53E2EB59 0DF2284F 0C311540 74CD3163 0A76F04B 89503222 
+  556AD156 E87C1500 0AA2D864 20ACC679 C60509D7 6C9BED80 21BF407D 8A0EF31C 
+  D2208FDF D702084F 7E42ADB6 9911D96E 14512028 B3F58C9D 6A1A9277 95CF27A0 
+  12235B37 BF2A1EA6 9BF6387B 34C9EAB2 BFBF04B8 B51C8DE1 FF644BB0 B6857586 
+  1B8CDC64 6D06D0B5 4FB3109E 24ABB242 F439BA56 397B0799 88E938B6 B1EA546B 
+  59F026C7 182273E8 B642B679 4A2E9B7B 838E7ECC 25C4055C 63899FA8 20C8DE68 
+  C75DCDC2 072C936A 04E39A25 E2077BA7 5D1C9527 C91A555C 1EF024B7 9C99E14E 
+  D8504CD0 CE01A185 08A0DE15 D2F09092 97BDCCF3 6C3ADA43 A15F1115 3194E8CE 
+  C282A2FB 37530203 010001A3 53305130 0F060355 1D130101 FF040530 030101FF 
+  301F0603 551D2304 18301680 14A20637 82EE096E CDB33075 751912CE 69E3FC52 
+  DF301D06 03551D0E 04160414 A2063782 EE096ECD B3307575 1912CE69 E3FC52DF 
+  300D0609 2A864886 F70D0101 05050003 82010100 0CDC192B 2D0D7703 0443842A 
+  17E4C093 63126D43 2A7E9B63 CC18E630 771AE54D 727AA63A 9CB05680 F7D12FC7 
+  FFDAF316 DD725885 09CCBD00 ABCE7D67 B16F43DC 99E59DA7 52083879 173529AD 
+  B651D08F EB24C183 E87337E8 2A0D7372 79150010 27467A9B 3EB67C27 08002193 
+  9375EB7C DD2B4D0F D87523D9 B95D86B3 F64B0F9A 20B73263 68D7E440 34DEB8CE 
+  0DE07C48 7037186C 957971EC A5BD3A8E E53DD1BA E28638BF 6CD83426 F0499E16 
+  6CAB3611 3B255AC0 3EAA7600 0D6440C8 B4AE4685 1EE8E5DD 432AD55F 75BD7933 
+  B4192763 A9077C77 3D3F8A05 E781318B E144378E 9AEA1C5A 36AE0B09 612B774C 
+  FEB1E3FF 23FA7D24 2A57E01E 893468AB 22A8177B
+  	quit
+crypto pki certificate chain SLA-TrustPoint
+ certificate ca 01
+  30820321 30820209 A0030201 02020101 300D0609 2A864886 F70D0101 0B050030 
+  32310E30 0C060355 040A1305 43697363 6F312030 1E060355 04031317 43697363 
+  6F204C69 63656E73 696E6720 526F6F74 20434130 1E170D31 33303533 30313934 
+  3834375A 170D3338 30353330 31393438 34375A30 32310E30 0C060355 040A1305 
+  43697363 6F312030 1E060355 04031317 43697363 6F204C69 63656E73 696E6720 
+  526F6F74 20434130 82012230 0D06092A 864886F7 0D010101 05000382 010F0030 
+  82010A02 82010100 A6BCBD96 131E05F7 145EA72C 2CD686E6 17222EA1 F1EFF64D 
+  CBB4C798 212AA147 C655D8D7 9471380D 8711441E 1AAF071A 9CAE6388 8A38E520 
+  1C394D78 462EF239 C659F715 B98C0A59 5BBB5CBD 0CFEBEA3 700A8BF7 D8F256EE 
+  4AA4E80D DB6FD1C9 60B1FD18 FFC69C96 6FA68957 A2617DE7 104FDC5F EA2956AC 
+  7390A3EB 2B5436AD C847A2C5 DAB553EB 69A9A535 58E9F3E3 C0BD23CF 58BD7188 
+  68E69491 20F320E7 948E71D7 AE3BCC84 F10684C7 4BC8E00F 539BA42B 42C68BB7 
+  C7479096 B4CB2D62 EA2F505D C7B062A4 6811D95B E8250FC4 5D5D5FB8 8F27D191 
+  C55F0D76 61F9A4CD 3D992327 A8BB03BD 4E6D7069 7CBADF8B DF5F4368 95135E44 
+  DFC7C6CF 04DD7FD1 02030100 01A34230 40300E06 03551D0F 0101FF04 04030201 
+  06300F06 03551D13 0101FF04 05300301 01FF301D 0603551D 0E041604 1449DC85 
+  4B3D31E5 1B3E6A17 606AF333 3D3B4C73 E8300D06 092A8648 86F70D01 010B0500 
+  03820101 00507F24 D3932A66 86025D9F E838AE5C 6D4DF6B0 49631C78 240DA905 
+  604EDCDE FF4FED2B 77FC460E CD636FDB DD44681E 3A5673AB 9093D3B1 6C9E3D8B 
+  D98987BF E40CBD9E 1AECA0C2 2189BB5C 8FA85686 CD98B646 5575B146 8DFC66A8 
+  467A3DF4 4D565700 6ADF0F0D CF835015 3C04FF7C 21E878AC 11BA9CD2 55A9232C 
+  7CA7B7E6 C1AF74F6 152E99B7 B1FCF9BB E973DE7F 5BDDEB86 C71E3B49 1765308B 
+  5FB0DA06 B92AFE7F 494E8A9E 07B85737 F3A58BE1 1A48A229 C37C1E69 39F08678 
+  80DDCD16 D6BACECA EEBC7CF9 8428787B 35202CDC 60E4616A B623CDBD 230E3AFB 
+  418616A9 4093E049 4D10AB75 27E86F73 932E35B5 8862FDAE 0275156F 719BB2F0 
+  D697DF7F 28
+  	quit
+!
+license udi pid CSR1000V sn 9HUXABKZFFX
+diagnostic bootup level minimal
+memory free low-watermark processor 72329
+!
+!
+spanning-tree extend system-id
+!
+username ansible privilege 15 secret 9 $9$qyYY0GDpaUN/3k$ueHfm/cV328hidXNc1itO4EiA02EQvJ.MtBzzqGUPWs
+username admin privilege 15 secret 9 $9$zIWDkmoxFuBJX.$0p4p2ABQOD9RgKK0nd7H/aQRr0EN7HUK4QPfVkk6z2Y
+!
+redundancy
+!
+!
+!
+!
+!
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+! 
+! 
+!
+!
+interface GigabitEthernet1
+ no ip address
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet1.200
+ encapsulation dot1Q 200
+ ip vrf forwarding T1-Users
+ ip address 10.1.0.252 255.255.255.0
+!
+interface GigabitEthernet1.300
+ encapsulation dot1Q 300
+ ip vrf forwarding T2-IoT
+ ip address 10.2.0.252 255.255.255.0
+!
+interface GigabitEthernet1.500
+ encapsulation dot1Q 500
+ ip address 10.100.1.1 255.255.255.0
+!
+interface GigabitEthernet2
+ ip address 10.200.1.1 255.255.255.0
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet3
+ ip vrf forwarding T1-Users
+ ip address 10.110.1.1 255.255.255.0
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet4
+ ip vrf forwarding T2-IoT
+ ip address 10.120.1.1 255.255.255.0
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet5
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet6
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet7
+ ip vrf forwarding management
+ ip address 172.16.100.21 255.255.255.0
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+router bgp 65100
+ bgp router-id 172.16.100.21
+ bgp log-neighbor-changes
+ network 0.0.0.0
+ network 10.200.1.0 mask 255.255.255.0
+ neighbor 10.100.1.254 remote-as 65500
+ !
+ address-family ipv4 vrf T1-Users
+  network 10.110.1.0 mask 255.255.255.0
+  neighbor 10.1.0.1 remote-as 65000
+  neighbor 10.1.0.1 activate
+ exit-address-family
+ !
+ address-family ipv4 vrf T2-IoT
+  network 10.120.1.0 mask 255.255.255.0
+  neighbor 10.2.0.1 remote-as 65000
+  neighbor 10.2.0.1 activate
+ exit-address-family
+!
+ip forward-protocol nd
+ip http server
+ip http authentication local
+ip http secure-server
+!
+ip route 0.0.0.0 0.0.0.0 10.200.1.11
+ip ssh version 2
+!
+!
+!
+!
+!
+!
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+!
+line con 0
+ logging synchronous
+ stopbits 1
+line vty 0 4
+ logging synchronous
+ transport input ssh
+line vty 5 15
+ logging synchronous
+ transport input ssh
+!
+ntp source GigabitEthernet7
+ntp server vrf management 172.16.100.100 prefer
+!
+!
+!
+!
+!
+end

@@ -1,0 +1,110 @@
+---
+- name: Clear BGP EVPN VXLAN configuration
+  hosts: leaf_switches
+  vars:
+    ansible_connection: ansible.netcommon.network_cli
+    ansible_network_os: cisco.nxos.nxos
+    ansible_become: yes
+    ansible_become_method: enable
+
+  tasks:
+    - name: Init configured VLAN SVI list
+      set_fact:
+        configured_svi: []
+
+    - name: Set configuredd VLAN SVI list
+      set_fact:
+        configured_svi: "{{ configured_svi + [ item.name ] }}"
+      loop: "{{ evpn_svi }}"
+
+    - name: Get real VLAN SVI list
+      cisco.nxos.nxos_command:
+        commands: show run | egrep "interface Vlan" | egrep -v "Vlan1"
+      register: svi_list
+
+    - name: Parse real VLAN SVI list
+      set_fact:
+        real_svi: "{{ svi_list.stdout_lines[0] | map('regex_replace', '.*\\s+(?P<vlan>Vlan[0-9]+)$', '\\g<vlan>') | list }}"
+
+    - name: VLAN SVI to delete
+      set_fact:
+        delete_svi: "{{ real_svi | difference(configured_svi) }}"
+
+    - name: Delete SVI
+      cisco.nxos.nxos_config:
+        lines: no interface {{ item }}
+      loop: "{{ delete_svi }}"
+
+    - name: Init configured VNI list
+      set_fact:
+        configured_vni: []
+
+    - name: Set configuredd VNI list
+      set_fact:
+        configured_vni: "{{ configured_vni + [ item.mapped_vni | string ] }}"
+      when: item.mapped_vni
+      loop: "{{ vlans_vnis }}"
+
+    - name: Get real VNI list
+      cisco.nxos.nxos_command:
+        commands: show run | egrep "member vni"
+      register: vni_list
+
+    - name: Parse real VNI list
+      set_fact:
+        real_vni: "{{ vni_list.stdout | map('regex_findall', '\\b(?:[0-9]{1,8})') | list }}"
+
+    - name: VNI to delete
+      set_fact:
+        delete_vni: "{{ real_vni[0] | difference(configured_vni) }}"
+
+    - name: Remove VNI from NVE
+      cisco.nxos.nxos_config:
+        lines: no member vni {{ item }}
+        parents: interface nve1
+      loop: "{{ delete_vni }}"
+
+    - name: Remove VNI from EVPN
+      cisco.nxos.nxos_config:
+        lines: no vni {{ item }} l2
+        parents: evpn
+      loop: "{{ delete_vni }}"
+
+    - name: Init configured VRF list
+      set_fact:
+        configured_vrf: []
+
+    - name: Set configuredd VRF list
+      set_fact:
+        configured_vrf: "{{ configured_vrf + [ item.name ] }}"
+      loop: "{{ vrfs }}"
+
+    - name: Get real VRF list
+      cisco.nxos.nxos_command:
+        commands: show run | egrep "vrf context" | egrep -v "management"
+      register: vrf_list
+
+    - name: Parse real VRF list
+      set_fact:
+        real_vrf: "{{ vrf_list.stdout_lines[0] | map('regex_replace', 'vrf context (?P<vrf>.+)$', '\\g<vrf>') | list }}"
+
+    - name: VRF to delete
+      set_fact:
+        delete_vrf: "{{ real_vrf | difference(configured_vrf) }}"
+
+    - name: Remove VRF from BGP config
+      cisco.nxos.nxos_config:
+        lines: no vrf {{ item }}
+        parents: router bgp {{ asn }}
+      loop: "{{ delete_vrf }}"
+
+    - name: Delete VRF
+      cisco.nxos.nxos_config:
+        lines: no vrf context {{ item }}
+      loop: "{{ delete_vrf }}"
+
+    - name: Save config
+      cisco.nxos.nxos_config:
+        save_when: always
+
+...

@@ -1,0 +1,172 @@
+---
+- name: Configure BGP EVPN VXLAN on leaf switches
+  hosts: leaf_switches
+
+  tasks:
+    - name: Configure VLANs and map VNIs
+      cisco.nxos.nxos_vlans:
+        config: "{{ vlans_vnis }}"
+        state: overridden
+      tags:
+        - svc_cfg
+
+    - name: Configure L2-VNIs
+      cisco.nxos.nxos_evpn_vni:
+        vni: "{{ item.vni }}"
+        route_distinguisher: auto
+        route_target_both: auto
+      loop: "{{ l2_vnis }}"
+      tags:
+        - svc_cfg
+
+    - name: Create VRFs
+      cisco.nxos.nxos_vrf:
+        aggregate: "{{ vrfs }}"
+        state: present
+      tags:
+        - vrf_cfg
+
+    - name: Configure AF for VRFs
+      cisco.nxos.nxos_vrf_af:
+        afi: ipv4
+        vrf: "{{ item.name }}"
+        route_targets:
+          - rt: auto
+        route_target_both_auto_evpn: yes
+        state: present
+      loop: "{{ vrfs }}"
+      tags:
+        - vrf_cfg
+
+    - name: Map L2-VNIs to NVE1
+      cisco.nxos.nxos_vxlan_vtep_vni:
+        interface: nve1
+        vni: "{{ item.vni }}"
+        multicast_group: "{{ item.mcast_group }}"
+        suppress_arp: yes
+      loop: "{{ l2_vnis }}"
+      tags:
+        - svc_cfg
+
+    - name: Map L3-VNIs to NVE1
+      cisco.nxos.nxos_vxlan_vtep_vni:
+        interface: nve1
+        vni: "{{ item.vni }}"
+        assoc_vrf: yes
+      loop: "{{ l3_vnis }}"
+      tags:
+        - vrf_cfg
+
+    - name: Create SVI
+      cisco.nxos.nxos_interfaces:
+        config:
+          - name: "{{ item.name }}"
+            enabled: yes
+      loop: "{{ evpn_svi }}"
+      tags:
+        - svc_cfg
+
+    - name: Create L3-VNI interfces
+      cisco.nxos.nxos_vrf_interface:
+        interface: "{{ item.name }}"
+        vrf: "{{ item.vrf }}"
+        state: present
+      loop: "{{ evpn_svi }}"
+      tags:
+        - svc_cfg
+
+    - name: Configure Host-facing SVI
+      cisco.nxos.nxos_interfaces:
+        config:
+          - name: "{{ item.name }}"
+            enabled: yes
+            fabric_forwarding_anycast_gateway: yes
+      when: item.address
+      loop: "{{ evpn_svi }}"
+      tags:
+        - svc_cfg
+
+    - name: Configure Core-facing SVI
+      cisco.nxos.nxos_interfaces:
+        config:
+          - name: "{{ item.name }}"
+            enabled: yes
+            ip_forward: yes
+      when: not item.address
+      loop: "{{ evpn_svi }}"
+      tags:
+        - svc_cfg
+
+    - name: Configure Host-facing SVI IP address
+      cisco.nxos.nxos_l3_interfaces:
+        config:
+          - name: "{{ item.name }}"
+            ipv4:
+              - address: "{{ item.address }}"
+            redirects: no
+      when: item.address
+      loop: "{{ evpn_svi }}"
+      tags:
+        - svc_cfg
+
+    - name: Configure Core-facing SVI IP address
+      cisco.nxos.nxos_l3_interfaces:
+        config:
+          - name: "{{ item.name }}"
+            redirects: no
+      when: not item.address
+      loop: "{{ evpn_svi }}"
+      tags:
+        - svc_cfg
+
+    - name: Add access-group in
+      cisco.nxos.nxos_acl_interfaces:
+        config:
+          - name: "{{ item.name }}"
+            access_groups:
+              - afi: ipv4
+                acls:
+                  - name: "{{ item.acg_in }}"
+                    direction: in
+      when: item.acg_in
+      loop: "{{ evpn_svi }}"
+      tags:
+        - svc_cfg
+
+    - name: Unshut SVI interfaces
+      cisco.nxos.nxos_config:
+        lines:
+          - no shutdown
+          - exit
+        parents: interface {{ item.name }}
+      loop: "{{ evpn_svi }}"
+      tags:
+        - svc_cfg
+
+    - name: Add VRFs to BGP
+      cisco.nxos.nxos_bgp_address_family:
+        config:
+          as_number: "{{ asn }}"
+          address_family:
+            - afi: ipv4
+              safi: unicast
+              vrf: "{{ item.name }}"
+              advertise_l2vpn_evpn: yes
+      loop: "{{ vrfs }}"
+      tags:
+        - vrf_cfg
+
+    - name: Configure L2 interfaces
+      cisco.nxos.nxos_l2_interfaces:
+        config: "{{ l2_interfaces }}"
+        state: merged
+      tags:
+        - acc_cfg
+
+    - name: Save leaf config
+      cisco.nxos.nxos_config:
+        save_when: always
+      tags:
+        - always
+
+...

@@ -1,0 +1,22 @@
+---
+ansible_host: 172.16.100.1
+
+router_id: 172.16.100.1
+
+l3_interfaces:
+  - name: Ethernet1/1
+    ipv4:
+      - address: 10.255.11.1/24
+  - name: Ethernet1/2
+    ipv4:
+      - address: 10.255.12.1/24
+
+loopback_interfaces:
+  - name: loopback0
+    ipv4:
+      - address: 192.168.100.1/32
+  - name: loopback1
+    ipv4:
+      - address: 192.168.101.1/32
+
+...

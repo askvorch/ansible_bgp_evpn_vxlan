@@ -1,0 +1,27 @@
+---
+all:
+  children:
+    nxos_hosts:
+      children:
+        fabric_switches:
+          children:
+            spine_switches:
+              hosts:
+                Spine-1:
+                Spine-2:
+            leaf_switches:
+              hosts:
+                Leaf-1:
+                Leaf-2:
+    ios_hosts:
+      children:
+        l3out_routers:
+          hosts:
+            L3-out:
+    asa_hosts:
+      children:
+        service_firewalls:
+          hosts:
+            ASA:
+
+...

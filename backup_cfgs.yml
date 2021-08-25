@@ -1,0 +1,36 @@
+---
+- name: Backup NXOS switches config
+  hosts: nxos_hosts
+
+  tasks:
+    - name: Backup NXOS config
+      cisco.nxos.nxos_config:
+        backup: yes
+        backup_options:
+          filename: "{{ inventory_hostname }}"
+          dir_path: /home/vorch/ansible-lab2/backup
+
+
+- name: Backup IOS router config
+  hosts: ios_hosts
+
+  tasks:
+    - name: Backup IOS config
+      cisco.ios.ios_config:
+        backup: yes
+        backup_options:
+          filename: "{{ inventory_hostname }}"
+          dir_path: /home/vorch/ansible-lab2/backup
+
+- name: Backup ASA config
+  hosts: asa_hosts
+
+  tasks:
+    - name: Backup ASA config
+      cisco.asa.asa_config:
+        backup: yes
+        backup_options:
+          filename: "{{ inventory_hostname }}"
+          dir_path: /home/vorch/ansible-lab2/backup
+
+...

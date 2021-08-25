@@ -1,0 +1,74 @@
+switchname {{ inventory_hostname }}
+!
+nv overlay evpn
+feature ospf
+feature bgp
+feature pim
+feature fabric forwarding
+feature interface-vlan
+feature vn-segment-vlan-based
+clock timezone EET 3 0
+feature nv overlay
+!
+no ip domain-lookup
+ip access-list aclUsers
+  5 remark Basic users traffic filtering
+  10 permit ip any 10.110.0.0 0.0.255.255
+  20 permit ip any 10.1.0.0 0.0.0.255
+  30 deny ip any 10.1.0.0 0.0.255.255
+  35 deny icmp any 10.1.0.0 0.0.255.255
+  40 permit ip any any
+!
+ntp server {{ ntp_server }} prefer use-vrf management
+ntp source-interface  mgmt0
+!
+fabric forwarding anycast-gateway-mac 0000.1122.3344
+!
+ip pim rp-address {{ anycast_rp }} group-list 224.0.0.0/4
+!
+hardware access-list tcam region racl 512
+hardware access-list tcam region e-racl 512
+hardware access-list tcam region vpc-convergence 0
+hardware access-list tcam region rp-ipv6-qos 0
+hardware access-list tcam region ifacl 256
+hardware access-list tcam region arp-ether 256 double-wide
+!
+{% for interface in l3_interfaces %}
+interface {{ interface['name'] }}
+  no switchport
+  ip address {{ interface['ipv4'][0]['address'] }}
+  ip ospf network point-to-point
+  ip router ospf 1 area 0.0.0.0
+  ip pim sparse-mode
+  no shutdown
+{% endfor %}
+!
+{% for interface in loopback_interfaces %}
+interface {{ interface['name'] }}
+  ip address {{ interface['ipv4'][0]['address'] }}
+  ip router ospf 1 area 0.0.0.0
+{% endfor %}
+!
+interface nve1
+  no shutdown
+  host-reachability protocol bgp
+  source-interface loopback1
+!
+router ospf 1
+  router-id {{ router_id }}
+router bgp 65000
+  router-id {{ router_id }}
+  address-family l2vpn evpn
+  template peer RR-S
+    update-source {{ update_source }}
+    address-family ipv4 unicast
+      send-community
+      send-community extended
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+{% for rrs in bgp_rrs %}  
+  neighbor {{ rrs }}
+    inherit peer RR-S
+    remote-as {{ asn }}
+{% endfor %}

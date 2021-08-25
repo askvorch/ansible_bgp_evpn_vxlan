@@ -1,0 +1,15 @@
+---
+# tasks file for spine-init-j2
+
+- name: Generate Spine config
+  ansible.builtin.template:
+    src: spine.j2
+    dest: roles/spine-init-j2/files/{{ inventory_hostname }}.cfg
+    mode: '0644'
+
+- name: Push Spine config
+  cisco.nxos.nxos_config:
+    src: roles/spine-init-j2/files/{{ inventory_hostname }}.cfg
+    provider: "{{ nxos_provider }}"
+    save_when: changed
+...

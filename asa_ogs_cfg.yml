@@ -1,0 +1,17 @@
+---
+- name: Configure object groups at ASA firewalls
+  hosts: service_firewalls
+
+  tasks:
+    - name: Configure object groups
+      cisco.asa.asa_ogs:
+        config:
+          - object_type: network
+            object_groups: "{{ network_object_groups }}"
+        state: replaced
+
+    - name: Save config
+      cisco.asa.asa_config:
+        save_when: modified
+
+...
