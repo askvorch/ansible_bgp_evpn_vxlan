@@ -1,6 +1,6 @@
 ---
 # Set Ansible tasks to run
-# 1 - Yes (Run), 2 - No (Don't run)
+# 1 - Yes (Run), 0 - No (Don't run)
 
 variables:
   # Configure new VRF for new isolated service
